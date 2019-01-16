@@ -1,0 +1,15 @@
+diff --git a/libstdc++-v3/config/os/gnu-linux/os_defines.h b/libstdc++-v3/config/os/gnu-linux/os_defines.h
+index 4cd81c0..feb4cd3 100644
+--- a/libstdc++-v3/config/os/gnu-linux/os_defines.h
++++ b/libstdc++-v3/config/os/gnu-linux/os_defines.h
+@@ -38,6 +38,10 @@
+
+ #include <features.h>
+
++#ifndef __GLIBC_PREREQ
++#define __GLIBC_PREREQ(x, y) 0
++#endif
++
+ // Provide a declaration for the possibly deprecated gets function, as
+ // glibc 2.15 and later does not declare gets for ISO C11 when
+ // __GNU_SOURCE is defined.

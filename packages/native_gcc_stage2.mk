@@ -9,7 +9,7 @@ $(package)_dependencies=native_binutils
 $(package)_linux_dependencies=native_musl native_linux_system_headers
 $(package)_mingw32_dependencies=native_mingw-w64-headers native_mingw-w64-crt
 $(package)_patches=0001-default-static-pie.patch 0002-autoconf.patch 0003-fixup-static-pie.patch
-$(package)_patches+=0001-Introduce-gcc_qsort.patch 0002-gcc_qsort-avoid-oversized-memcpy-temporaries.patch 0003-gcc_qsort-avoid-overlapping-memcpy-PR-86311.patch 0004-qsort_chk-call-from-gcc_qsort-instead-of-wrapping-it.patch
+$(package)_patches+=0001-Introduce-gcc_qsort.patch 0002-gcc_qsort-avoid-oversized-memcpy-temporaries.patch 0003-gcc_qsort-avoid-overlapping-memcpy-PR-86311.patch 0004-qsort_chk-call-from-gcc_qsort-instead-of-wrapping-it.patch glibc_version_check.patch
 
 
 $(package)_mpfr_version=$(native_gcc_mpfr_version)
@@ -63,7 +63,8 @@ define $(package)_preprocess_cmds
   patch -p1 < $($(package)_patch_dir)/0001-Introduce-gcc_qsort.patch && \
   patch -p1 < $($(package)_patch_dir)/0002-gcc_qsort-avoid-oversized-memcpy-temporaries.patch && \
   patch -p1 < $($(package)_patch_dir)/0003-gcc_qsort-avoid-overlapping-memcpy-PR-86311.patch && \
-  patch -p1 < $($(package)_patch_dir)/0004-qsort_chk-call-from-gcc_qsort-instead-of-wrapping-it.patch
+  patch -p1 < $($(package)_patch_dir)/0004-qsort_chk-call-from-gcc_qsort-instead-of-wrapping-it.patch &&\
+  patch -p1 < $($(package)_patch_dir)/glibc_version_check.patch
 endef
 
 #  patch -p1 < $($(package)_patch_dir)/0009-stabilize-ira-color.patch && \
@@ -119,6 +120,22 @@ define $(package)_set_vars
   $(package)_config_opts+=--enable-checking=yes
   $(package)_config_opts+=--disable-werror
   $(package)_config_opts+=--disable-libstdcxx-filesystem-ts
+  $(package)_config_opts+=--with-system-zlib
+  $(package)_config_opts+=--enable-__cxa_atexit
+  $(package)_config_opts+=--disable-libunwind-exceptions
+  $(package)_config_opts+=--enable-clocale=gnu
+  $(package)_config_opts+=--disable-libstdcxx-pch
+  $(package)_config_opts+=--enable-gnu-unique-object
+  $(package)_config_opts+=--enable-linker-build-id
+  $(package)_config_opts+=--disable-lto
+  $(package)_config_opts+=--disable-plugin
+  $(package)_config_opts+=--enable-install-libiberty
+  $(package)_config_opts+=--with-linker-hash-style=gnu
+  $(package)_config_opts+=--enable-gnu-indirect-function
+  $(package)_config_opts+=--enable-checking=release
+  $(package)_config_opts+=--enable-default-pie
+  $(package)_config_opts+=--enable-default-ssp
+  $(package)_config_opts+=--without-isl
   $(package)_config_opts+=--with-build-time-tools=$($(package)_prefix)/bin
   $(package)_config_opts+=CC=$(old_build_toolchain_CC)
   $(package)_config_opts+=CXX=$(old_build_toolchain_CXX)
@@ -129,8 +146,10 @@ define $(package)_set_vars
 endef
 
 define $(package)_config_cmds
+  echo  $($(package)_prefix) &&\
   export PATH=$($(package)_prefix)/bin:$(PATH) && \
-  ../configure $$($(package)_config_opts)
+  echo $(PATH) &&\
+  ../configure $($(package)_config_opts)
 endef
 
 define $(package)_build_cmds
